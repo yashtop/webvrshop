@@ -34,7 +34,8 @@ class DashboardComponent extends Component {
     })
   }
   submitWalletOTP = () => {
-    const requestData = {requestID:this.requestID,mobileNumber:this.state.mobilenumber,otp:this.state.otp};
+    const requestData = {requestId:this.requestID,mobileNumber:this.state.mobilenumber,otp:this.state.otp};
+    console.log(requestData);
     const response = APISERVICES({type:'zetaotpsubmit',param:requestData});
     response.then(res => {
         this.setState({showVRButton:true,successMsg:true})
