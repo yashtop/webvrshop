@@ -23,11 +23,11 @@ class VRComponent extends Component {
     {'width':4,'height':2,'position':'10.227  9.368 -2','color':'#000','rotation':'0 -90 0','opacity':0.5},
     {'width':4,'height':2,'position':'10.227 6.368 -2','color':'#000','rotation':'0 -90 0','opacity':0.5}],
     'productAttr':[
-      {'imgHeight':5,'imgWidth':5,'imgPosition':'1.873 -25.530 97.375','imgRotation':'0 135 0','txtHeight':35,'txtWidth':70,'txtPosition':'-0.394 -20.213 97.676','txtRotation':'0 135 0','txtColor':'white'},
-      {'imgHeight':5,'imgWidth':5,'imgPosition':'-125.387 -10 -31.593','imgRotation':'0 90 0','txtHeight':60,'txtWidth':120,'txtPosition':'-130.387 -5.241 -33.465','txtRotation':'0 90 0','txtColor':'blue'},
-      {'imgHeight':10,'imgWidth':10,'imgPosition':'-151.265 -61.731 -68.239','imgRotation':'90 0 0','txtHeight':35,'txtWidth':70,'txtPosition':'-75.330 -25.167 -34.154','txtRotation':'0 90 0','txtColor':'yellow'},
-      {'imgHeight':20,'imgWidth':20,'imgPosition':'33.080 -12.162 -344.808','imgRotation':'0 0 0','txtHeight':150,'txtWidth':300,'txtPosition':'45.782 4.142 -526.768','txtRotation':'0 0 0','txtColor':'white'},
-      {'imgHeight':10,'imgWidth':10,'imgPosition':'242.443 -18.350 1.283','imgRotation':'0 90 0','txtHeight':50,'txtWidth':100,'txtPosition':'237.141 -8.437 1.450','txtRotation':'0 -90 0','txtColor':'white'}
+      {'imgHeight':8,'imgWidth':8,'imgPosition':'1.873 -25.530 97.375','imgRotation':'0 135 0','txtHeight':35,'txtWidth':70,'txtPosition':'-0.394 -20.213 97.676','txtRotation':'0 135 0','txtColor':'white'},
+      {'imgHeight':10,'imgWidth':10,'imgPosition':'-125.387 -13 -31.593','imgRotation':'0 90 0','txtHeight':60,'txtWidth':120,'txtPosition':'-130.387 -5.241 -33.465','txtRotation':'0 90 0','txtColor':'blue'},
+      {'imgHeight':20,'imgWidth':20,'imgPosition':'-151.265 -61.731 -68.239','imgRotation':'90 0 0','txtHeight':35,'txtWidth':70,'txtPosition':'-75.330 -25.167 -34.154','txtRotation':'0 90 0','txtColor':'yellow'},
+      {'imgHeight':30,'imgWidth':30,'imgPosition':'33.080 -17.162 -344.808','imgRotation':'0 0 0','txtHeight':150,'txtWidth':300,'txtPosition':'45.782 4.142 -526.768','txtRotation':'0 0 0','txtColor':'white'},
+      {'imgHeight':12,'imgWidth':12,'imgPosition':'248.443 -20.350 1.283','imgRotation':'0 90 0','txtHeight':50,'txtWidth':100,'txtPosition':'237.141 -8.437 1.450','txtRotation':'0 -90 0','txtColor':'yellow'}
      ],
      cartProduct:[],
      productData:[],
@@ -106,26 +106,38 @@ class VRComponent extends Component {
       }else{
         cartProduct[index] = data;
       }
-      this.setState({
-        cartProduct:cartProduct,
-        cartTotalPrice:cartTotalPrice
-      })
+      const memData = LOCALSTORAGESERVICES({type:'get'});
+      const cartResponse = APISERVICES({type:'cart',param:{accessToken:memData.access_token,cartId:this.state.cartId}});
+      cartResponse.then((res => {
+        const response = APISERVICES({type:'deletecartitem',param:{accessToken:memData.access_token,cartId:this.state.cartId,lineItemId:res.data.items[index].lineItemId}});
+        response.then((confRes => {
+          console.log(confRes)
+          this.setState({
+            cartProduct:cartProduct,
+            cartTotalPrice:cartTotalPrice
+          })
+        }));
+      }));
     }
 
   }
-  payment = () => {
+  payment = (data) => {
     const memData = LOCALSTORAGESERVICES({type:'get'});
+    const paymentResponse = APISERVICES({type:'vrmakepayment',param:{mobileNumber:memData.mobileNumber,paymentType:data.paymentMethod,amountInPaise:10}});
     const cartResponse = APISERVICES({type:'cart',param:{accessToken:memData.access_token,cartId:this.state.cartId}});
-    cartResponse.then((res => {
-      const response = APISERVICES({type:'confirmOrder',param:{accessToken:memData.access_token,orderId:res.data.orderId}});
-      response.then((res => {
-        this.setState({
-          cartTotalPrice:0,
-          paymentPopupShow:false,
-          messagePopupShow:true,
-          cartProduct:[],
-          successMessage:'Order Id - '+res.data['purchase-number']
-        })
+
+    paymentResponse.then((resPayment => {
+      cartResponse.then((res => {
+        const response = APISERVICES({type:'confirmOrder',param:{accessToken:memData.access_token,orderId:res.data.orderId}});
+        response.then((resCheckout => {
+          this.setState({
+            cartTotalPrice:0,
+            paymentPopupShow:false,
+            messagePopupShow:true,
+            cartProduct:[],
+            successMessage:'Order Id - '+resCheckout.data['purchase-number']
+          })
+        }))
       }))
     }));
 
@@ -217,7 +229,7 @@ class VRComponent extends Component {
       this.setState({paymentPopupShow:true});
      break;
      case 'payment':
-      this.payment();
+      this.payment(data);
      break;
 
    }

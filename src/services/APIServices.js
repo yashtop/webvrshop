@@ -26,7 +26,11 @@ const APISERVICES = (data) =>{
       response =  axios.post(url,data.param);
     break;
     case 'deletecartitem':
-      url += '/confirmOrder';
+      url += '/deletecartitem';
+      response =  axios.post(url,data.param);
+    break;
+    case 'vrmakepayment':
+      url += '/vrmakepayment';
       response =  axios.post(url,data.param);
     break;
     case 'cart':

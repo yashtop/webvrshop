@@ -17,7 +17,7 @@ class App extends Component {
   render() {
     return (
     <Router>
-    <div>
+    <div className="aframeContainer">
     <Route exact path="/login" component={LoginComponent} />
     <PrivateRoute exact path="/" component={DashboardComponent} />
     <PrivateRoute path="/dashboard" component={DashboardComponent} />

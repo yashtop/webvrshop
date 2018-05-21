@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import classnames from 'classnames';
 import { Alert,TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, CardTitle, CardText, Row, Form, FormGroup, Label, Input, FormText,Col } from 'reactstrap';
 import APISERVICES from '../../services/APIServices';
-import { Redirect,Route } from 'react-router-dom'
+import { Redirect,Route } from 'react-router-dom';
+import LOCALSTORAGESERVICES from '../../services/LocalStorageServices';
 class DashboardComponent extends Component {
   constructor(props) {
     super(props);
@@ -35,9 +36,9 @@ class DashboardComponent extends Component {
   }
   submitWalletOTP = () => {
     const requestData = {requestId:this.requestID,mobileNumber:this.state.mobilenumber,otp:this.state.otp};
-    console.log(requestData);
     const response = APISERVICES({type:'zetaotpsubmit',param:requestData});
     response.then(res => {
+        LOCALSTORAGESERVICES({type:'update',data:{name:'mobileNumber',value:this.state.mobilenumber}});
         this.setState({showVRButton:true,successMsg:true})
     })
   }
@@ -62,7 +63,7 @@ class DashboardComponent extends Component {
     </FormGroup>
     <FormGroup row>
       <Col sm={10}>
-        <Button color="success"   onClick={this.submitWalletOTP} >Submit</Button>
+        <Button color="success" onClick={this.submitWalletOTP} >Submit</Button>
       </Col>
     </FormGroup></div>:'';
     const walletMobileButton =  (!walletData.optshow)?<div><FormGroup row>
